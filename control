@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+
+import os
+import time
+import subprocess
+import cv2
+import pickle
+
+people_present = subprocess.check_output(['python3', 'ir_sensor.py'])
+people_present = people_present.decode('utf-8').strip()
+print(people_present)
+if "true" in people_present:
+	print('running face_recognition')
+	os.system('fswebcam -r 720x480 --no-banner imgx.jpg')
+	captured_face = cv2.imread('imgx.jpg')
+	#with open('unzipped/encodings.pickle', 'rb') as f:
+	#	model = pickle.load(f)
+	#	output = model.predict(captured_face)
+	#	if(output):
+	#		print('yes it is working!')
+	face_check = subprocess.check_output(['python3', 'face_recognition.py'])
+	faces_exist = subprocess.check_output(['ls', 'faces']).decode('utf-8').split("\n")
+	face_check = face_check.decode('utf-8').strip()
+	if face_check in faces_exist:
+		my_zenity = subprocess.Popen(['zenity', '--info', '--text="Welcome {}"'.format(face_check), '--width=600', '--height=600'])
+		subprocess.Popen(['mm_starter'], shell=True)
+		time.sleep(15)
+		subprocess.call(['kill', str(my_zenity.pid)])
+		subprocess.Popen(['python3', 'speech_to_text.py'])
